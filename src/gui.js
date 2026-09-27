@@ -48,6 +48,11 @@ async function main() {
           res.end(JSON.stringify({ error: "Please enter a word or term first" }));
           return;
         }
+        if (word.trim().length > 80) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Term is too long (max 80 characters)" }));
+          return;
+        }
         const result = await generate(modelId, word.trim());
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(result));
