@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QVAC Word Meaning Simplifier</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #f5f0ff 0%, #e2d4ff 100%);
+    font-family: system-ui, sans-serif;
+    color: #3a2360;
+    display: flex;
+    justify-content: center;
+    padding: 46px 20px;
+  }
+  .wrap { width: 100%; max-width: 480px; text-align: center; }
+  .icon { font-size: 2rem; margin-bottom: 4px; }
+  h1 { font-size: 1.5rem; margin: 0 0 6px; color: #6a2fc9; font-weight: 800; }
+  .subtitle { color: #6a5590; margin-bottom: 24px; font-size: 0.9rem; }
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 28px 24px;
+    box-shadow: 0 10px 30px rgba(106,47,201,0.12);
+  }
+  input[type=text] {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid #ddc9fb;
+    background: #faf7ff;
+    color: #3a2360;
+    font-family: inherit;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  button.action {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    background: #7b3fe4;
+    color: #fff;
+  }
+  button.action:disabled { opacity: 0.4; cursor: not-allowed; }
+  .status { margin-top: 14px; font-size: 0.85rem; color: #6a5590; min-height: 1.2em; }
+  .result-box { text-align: left; margin-top: 20px; }
+  .result-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #8a6fc0; margin-bottom: 4px; }
+  .result-text { font-size: 1.05rem; line-height: 1.5; margin: 0 0 16px; color: #3a2360; }
+  .footer-note { color: #6a5590; font-size: 0.78rem; margin-top: 20px; }
+  .spinner {
+    display: inline-block;
+    width: 13px; height: 13px;
+    border: 2px solid #e2d4ff;
+    border-top-color: #7b3fe4;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="icon">💡</div>
+    <h1>QVAC Word Meaning Simplifier</h1>
+    <p class="subtitle">Enter a complex or jargon word, get a simple definition and example. 100% on-device.</p>
+
+    <div class="card">
+      <input type="text" id="mainInput" placeholder="e.g. ubiquitous, amortization" />
+      <button class="action" id="generateBtn">Simplify</button>
+      <div class="status" id="status"></div>
+      <div id="resultBox"></div>
+    </div>
+
+    <p class="footer-note">Everything runs locally on your machine. No text ever leaves this device.</p>
+  </div>
+
+  <script>
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    const mainInput = document.getElementById('mainInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const status = document.getElementById('status');
+    const resultBox = document.getElementById('resultBox');
+
+    async function generate() {
+      const value = mainInput.value.trim();
+      if (!value) return;
+      generateBtn.disabled = true;
+      resultBox.innerHTML = '';
+      status.innerHTML = '<span class="spinner"></span>Simplifying...';
+
+      try {
+        const res = await fetch('/api/simplify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ word: value }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        status.textContent = '';
+        resultBox.innerHTML = `
+          <div class="result-box">
+            <div class="result-label">Simple Definition</div>
+            <p class="result-text">${escapeHtml(data.definition)}</p>
+            <div class="result-label">Example</div>
+            <p class="result-text">${escapeHtml(data.example)}</p>
+          </div>
+        `;
+      } catch (err) {
+        status.textContent = 'Error: ' + err.message;
+      } finally {
+        generateBtn.disabled = false;
+      }
+    }
+
+    generateBtn.addEventListener('click', generate);
+    mainInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') generate(); });
+  </script>
+</body>
+</html>

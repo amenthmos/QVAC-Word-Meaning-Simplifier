@@ -1,0 +1,25 @@
+{
+  "name": "qvac-word-meaning-simplifier",
+  "version": "1.0.0",
+  "description": "Enter a complex or jargon word and an on-device AI gives a simple one-sentence definition plus an example sentence. No cloud call, no API key.",
+  "type": "module",
+  "main": "src/gui.js",
+  "scripts": {
+    "start": "node src/gui.js",
+    "gui": "node src/gui.js"
+  },
+  "keywords": [
+    "qvac",
+    "on-device-ai",
+    "definitions",
+    "llm",
+    "offline-ai"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@qvac/sdk": "^0.19.0"
+  },
+  "engines": {
+    "node": ">=22.17"
+  }
+}
